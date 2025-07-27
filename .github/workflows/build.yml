@@ -22,7 +22,7 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          android-version: 15
+          android-version: 13
           aosp-clang-version: r450784c
           disable-lto: false
           anykernel3: true
