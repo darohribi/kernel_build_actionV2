@@ -13,16 +13,13 @@ jobs:
 
     steps:
       - name: Build Kernel
-        uses: dabao1955/kernel_build_action@main
+        uses: tungnt017/kernel_build_action@main
         with:
           kernel-url: https://github.com/darohribi/A54B
-          kernel-dir: kernel
           kernel-branch: main
           config: s5e8835-m35xxx_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          android-version: 12
-          aosp-clang-version: r383902
-          disable-lto: false
+          android-version: 13
           anykernel3: true
