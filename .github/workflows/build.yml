@@ -1,99 +1,37 @@
-name: Build S23+ (dm2q) GKI Kernel
+name: Build S23+ (dm2q) Kernel
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  Build-Kernel:
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    permissions:
+      contents: read
 
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git bc bison flex libssl-dev \
-          make libc6-dev libncurses5-dev python3 curl rsync \
-          libelf-dev cpio unzip
-
-      # 🧠 Workspace setup
-      - name: Prepare workspace
-        run: |
-          mkdir -p workspace
-          cd workspace
-
-      # 📦 Clone kernel (Samsung SM8550)
-      - name: Clone kernel source
-        run: |
-          cd workspace
-          git clone https://github.com/samsung-sm8550-cola2261/android_kernel_samsung_sm8550 kernel
-          cd kernel
-          git checkout upstream/lineage
-
-      # 📦 Qualcomm MSM configs (REQUIRED)
-      - name: Clone msm-kernel configs
-        run: |
-          cd workspace
-          git clone https://github.com/LineageOS/android_kernel_qcom_common msm-kernel
-
-      # 📦 AOSP kernel build system
-      - name: Clone build system
-        run: |
-          cd workspace
-          git clone https://android.googlesource.com/kernel/build build
-
-      # 🔧 Clang toolchain
-      - name: Clone clang prebuilts
-        run: |
-          cd workspace
-          git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 prebuilts/clang
-
-      # 🔧 mkbootimg (needed for boot.img + AVB)
-      - name: Clone mkbootimg tools
-        run: |
-          cd workspace
-          git clone https://android.googlesource.com/platform/system/tools/mkbootimg tools/mkbootimg
-
-      # 🔥 KernelSU integration
-      - name: Integrate KernelSU
-        run: |
-          cd workspace/kernel
-          curl -LSs https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -
-
-      # ⚙️ Build kernel (REAL MSM GKI PIPELINE)
-      - name: Build kernel
-        run: |
-          cd workspace/kernel
-
-          export ROOT_DIR=$(pwd)/..
-          export KERNEL_DIR=kernel
-
-          # IMPORTANT: force GKI mode
-          export VARIANT=gki
-
-          # avoid ABI crashes
-          export SKIP_ABI_CHECKS=1
-
-          # allow CI build
-          export KBUILD_BUILD_HOST=github
-          export KBUILD_BUILD_USER=actions
-
-          # ensure dtbo
-          export DT_OVERLAY_SUPPORT=1
-
-          # build
-          bash ../build/build.sh
-
-      # 📦 Collect outputs
-      - name: Prepare artifacts
-        run: |
-          cd workspace
-          mkdir output
-          find . -type d -path "*out/*/dist" -exec cp -r {}/* output/ \;
-
-      # 📤 Upload
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Build Kernel
+        uses: dabao1955/kernel_build_action@main
         with:
-          name: dm2q-kernel-build
-          path: workspace/output/*
+          # Using the Samsung SM8550 source you provided
+          kernel-url: https://github.com/samsung-sm8550-cola2261/android_kernel_samsung_sm8550
+          kernel-dir: msm-kernel
+          kernel-branch: upstream/lineage
+          
+          # Configuration for S23+ / SM8550
+          config: gki_defconfig
+          arch: arm64
+          android-version: 13
+          
+          # Toolchain Setup
+          aosp-gcc: true
+          aosp-clang: true
+          aosp-clang-version: r450784d # Updated for SM8550 compatibility
+          
+          # Features
+          ksu: true
+          ksu-version: main
+          disable-lto: true
+          anykernel3: true
