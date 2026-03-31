@@ -26,7 +26,7 @@ jobs:
           android-version: 13
           
           # Toolchain Setup
-          aosp-gcc: true
+          aosp-gcc: false
           aosp-clang: true
           aosp-clang-version: r450784d # Updated for SM8550 compatibility
           
